@@ -6,6 +6,7 @@ const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
 const people = require('./users-data.js')
 const uuid = require('uuid/v4');
+const winston = require('winston');
 
 const app = express()
 
@@ -16,14 +17,52 @@ app.use(express.json());
 app.use(helmet())
 app.use(cors())
 
-const users = [];
+// set up winston
+const logger = winston.createLogger({
+     level: 'info',
+     format: winston.format.json(),
+     transports: [
+       new winston.transports.File({ filename: 'info.log' })
+     ]
+   });
+   
+   if (NODE_ENV !== 'production') {
+     logger.add(new winston.transports.Console({
+       format: winston.format.simple()
+     }));
+   }
+
+const users = [
+     {
+          id: "2fdab114-014d-4f1b-827c-b3872b1aec93",
+          first_name: "Oscar",
+          last_name: "Jarjayes",
+          user_name: "LadyOscar",
+          email: "madamigella@gpost.fr",
+          password: "veryg00dpassw0rd", 
+          country: "France", 
+          month: "jun"
+      },
+      {
+          id: "d3c738e4-324e-417b-9800-d93a8705de82",
+          first_name: "Andre",
+          last_name: "Grandier",
+          user_name: "Bellocchio",
+          email: "domestico@gpoor.fr",
+          password: "veryg00dpassw0rd2",
+          country: "Italy", 
+          month: "jan"
+      }
+];
 
 app.use(function validateBearerToken(req, res, next) {
      const authToken = req.get('Authorization')
      const apiToken = process.env.API_TOKEN
 
      console.log('validate bearer token middleware')
+     
      if (!authToken || authToken.split(' ')[1] !== apiToken) {
+          logger.error(`Unauthorized request to path: ${req.path}`);
           return res.status(401).json({ error: 'Unauthorized request' })
      }   
         // move to the next middleware
@@ -106,7 +145,7 @@ app.get('/country', (req, res) => {
        .send('Please provide a country');
    }
      
-     let results = people
+     let results = users
         .filter(person =>
           person
              .country
@@ -124,10 +163,10 @@ app.get('/month', (req, res) => {
        .send('Please provide a month');
    }
      
-     let results = people
+     let results = users
         .filter(person =>
           person
-             .country
+             .month
              .toLowerCase()
              .includes(search.toLowerCase()));
      res.json(results)

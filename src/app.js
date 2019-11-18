@@ -5,11 +5,12 @@ const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
 // const people = require('./users-data.js')
-// const uuid = require('uuid/v4');
 const winston = require('winston');
-const TripsService = require('./trips-service.js')
+// const TripsService = require('./trips-service.js')
+const tripsRouter = require('./trips/trips-router')
 
 const app = express()
+const jsonParser = express.json()
 
 const morganOption = (NODE_ENV === 'production')? 'tiny': 'common';
 
@@ -17,6 +18,9 @@ app.use(morgan(morganOption))
 app.use(express.json());
 app.use(helmet())
 app.use(cors())
+
+app.use('/trips', tripsRouter)
+
 
 // set up winston
 const logger = winston.createLogger({
@@ -194,14 +198,44 @@ app.get('/', (req, res) => {
      res.send('Fede, Speranza e Carita')
 })
 
-app.get('/trips', (req, res, next) => {
-    const knex = req.app.get('db')
-    TripsService.getAllTrips(knex)
-        .then(trips => {
-            res.json(trips)
-        })
-        .catch(next)
-})
+// app.get('/trips', (req, res, next) => {
+//     const knex = req.app.get('db')
+//     TripsService.getAllTrips(knex)
+//         .then(trips => {
+//             res.json(trips)
+//         })
+//         .catch(next)
+// })
+
+// app.get('/trips/:trip_id', (req, res, next) => {
+//     const knex = req.app.get('db')
+//     TripsService.getById(knex, req.params.trip_id)
+//         .then(trip => {
+//             if (!trip) {
+//             return res.status(404).json({
+//             error: { message: `Trip doesn't exist` }
+//             })
+//             }
+//             res.json(trip)
+//         })
+//         .catch(next)
+// })
+// app.post('/trips', jsonParser, (req, res, next) => {
+//     const { country, month } = req.body
+//     const newTrip = { country, month }
+//     TripsService.insertTrip(
+//         req.app.get('db'),
+//         newTrip
+//     )
+//     .then(trip => {
+//         res
+//         .status(201)
+//         .location(`/trips/${trip.id}`)
+//         .json(trip)
+//     })
+//     .catch(next)
+// })
+
 
 // app.get('/users', (req, res) => {     
 //      //THIS IS THE ARRAY AT LINE 19, IF YOU WANNA PLAY WITH THE PEOPLE ARRAY, YOU HAVE TO SWITCH NAME

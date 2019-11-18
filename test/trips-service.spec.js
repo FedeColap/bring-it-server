@@ -1,4 +1,4 @@
-const TripsService = require('../src/trips-service')
+const TripsService = require('../src/trips/trips-service')
 const knex = require('knex')
 
 describe(`Trips service object`, function() {

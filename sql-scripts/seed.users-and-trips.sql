@@ -1,6 +1,6 @@
 BEGIN;
 
-INSERT INTO users 
+INSERT INTO searchers
     (first_name, last_name, user_name, email, password)
 VALUES
 ('Oscar', 'Jarjayes', 'LadyOscar', 'madamigella@gpost.fr', 'veryg00dpassw0rd'),

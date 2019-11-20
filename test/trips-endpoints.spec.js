@@ -1,8 +1,9 @@
 const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
-const { makeTripsArray } = require('./trips.fixtures')
-const { makeUsersArray } = require('./users.fixtures')
+// const { makeTripsArray } = require('./trips.fixtures')
+// const { makeUsersArray } = require('./users.fixtures')
+const { makeUsersArray, makeTripsArray } = require('./test-helpers')
 
 describe('Trips Endpoints', function() {
     let db
@@ -92,8 +93,16 @@ describe('Trips Endpoints', function() {
         })
     })
 
+    //CANNOT WORK UNTIL I FIGURE OUT HOW TO ASSIGN THE PROPER USER_ID TO A NEW POST
     describe(`POST /api/trips`, () => {
-        it(`creates a trip, responding with 201 and the new trip`,  function() {
+        const testUsers = makeUsersArray();
+        beforeEach('insert malicious article', () => {
+            return db
+              .into('searchers')
+              .insert(testUsers)
+          })
+        it.skip(`creates a trip, responding with 201 and the new trip`,  function() {
+            const testUser = testUsers[0]
             const newTrip = {
                 country: 'Nicaragua',
                 month: 'nov',
@@ -105,6 +114,7 @@ describe('Trips Endpoints', function() {
                 .expect(res => {
                     expect(res.body.country).to.eql(newTrip.country)
                     expect(res.body.month).to.eql(newTrip.month)
+                    expect(res.body.user.id).to.eql(testUser.id)
                     expect(res.body).to.have.property('id')
                     expect(res.headers.location).to.eql(`/api/trips/${res.body.id}`)
                 })

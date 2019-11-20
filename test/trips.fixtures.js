@@ -3,17 +3,20 @@ function makeTripsArray() {
         {
             id: 1,
             country: "France", 
-            month: "jun"
+            month: "jun",
+            user_id: 1
         },
         {
             id: 2,
             country: "Italy", 
-            month: "jan"
+            month: "jan",
+            user_id: 2
         },
         {
            id: 3,
            country : "Austria", 
-           month : "jan"
+           month : "jan",
+           user_id: 1
         },
     ]
 }

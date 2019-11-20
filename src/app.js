@@ -4,10 +4,10 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
-// const people = require('./users-data.js')
+// const validateBearerToken = require('./validate-bearer-token')
 const winston = require('winston');
-// const TripsService = require('./trips-service.js')
 const tripsRouter = require('./trips/trips-router')
+const usersRouter = require('./users/users-router')
 
 const app = express()
 const jsonParser = express.json()
@@ -19,7 +19,8 @@ app.use(express.json());
 app.use(helmet())
 app.use(cors())
 
-app.use('/trips', tripsRouter)
+app.use('/api/trips', tripsRouter)
+app.use('/api/users', usersRouter)
 
 
 // set up winston
@@ -180,61 +181,13 @@ const users = [
       },
 ];
 
-// app.use(function validateBearerToken(req, res, next) {
-//      const authToken = req.get('Authorization')
-//      const apiToken = process.env.API_TOKEN
+// app.use(validateBearerToken)
 
-//      console.log('validate bearer token middleware')
-     
-//      if (!authToken || authToken.split(' ')[1] !== apiToken) {
-//           logger.error(`Unauthorized request to path: ${req.path}`);
-//           return res.status(401).json({ error: 'Unauthorized request' })
-//      }   
-//         // move to the next middleware
-//      next()
-// })
 
 app.get('/', (req, res) => {
      res.send('Fede, Speranza e Carita')
 })
 
-// app.get('/trips', (req, res, next) => {
-//     const knex = req.app.get('db')
-//     TripsService.getAllTrips(knex)
-//         .then(trips => {
-//             res.json(trips)
-//         })
-//         .catch(next)
-// })
-
-// app.get('/trips/:trip_id', (req, res, next) => {
-//     const knex = req.app.get('db')
-//     TripsService.getById(knex, req.params.trip_id)
-//         .then(trip => {
-//             if (!trip) {
-//             return res.status(404).json({
-//             error: { message: `Trip doesn't exist` }
-//             })
-//             }
-//             res.json(trip)
-//         })
-//         .catch(next)
-// })
-// app.post('/trips', jsonParser, (req, res, next) => {
-//     const { country, month } = req.body
-//     const newTrip = { country, month }
-//     TripsService.insertTrip(
-//         req.app.get('db'),
-//         newTrip
-//     )
-//     .then(trip => {
-//         res
-//         .status(201)
-//         .location(`/trips/${trip.id}`)
-//         .json(trip)
-//     })
-//     .catch(next)
-// })
 
 
 // app.get('/users', (req, res) => {     
@@ -299,24 +252,7 @@ app.get('/', (req, res) => {
 
 //      res.send('All validation passed');
 // });
-// app.get('/search', (req, res) => {
-//      const { nation = "" } = req.query;
-//      // do some validation
-//   if (!nation) {
-//      // mark is required
-//      return res
-//        .status(400)
-//        .send('Please provide a country');
-//    }
-     
-//    let results = users
-//            .filter(person =>
-//              person
-//                 .country
-//                 .toLowerCase()
-//                 .includes(nation.toLowerCase()));
-//         res.json(results)
-// })
+
 
 
 app.use(function errorHandler(error, req, res, next) {

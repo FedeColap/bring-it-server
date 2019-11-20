@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express')
 const TripsService = require('./trips-service')
 
@@ -16,7 +17,7 @@ tripsRouter
       .catch(next)
   })
   .post(jsonParser, (req, res, next) => {
-    const { country, month } = req.body
+    const { country, month, user_id } = req.body
     const newTrip = { country, month }
     
     if(!country) {
@@ -29,6 +30,9 @@ tripsRouter
         error: { message: `Missing 'month' in request body` }
       })
     }
+    
+    newTrip.user_id = user_id
+
     TripsService.insertTrip(
         req.app.get('db'),
         newTrip
@@ -36,7 +40,7 @@ tripsRouter
     .then(trip => {
         res
         .status(201)
-        .location(`/trips/${trip.id}`)
+        .location(path.posix.join(req.originalUrl, `/${trip.id}`))
         .json(trip)
     })
         .catch(next)

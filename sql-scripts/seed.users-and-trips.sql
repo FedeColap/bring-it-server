@@ -1,5 +1,7 @@
 BEGIN;
 
+TRUNCATE trips, searchers RESTART IDENTITY CASCADE;
+
 INSERT INTO searchers
     (first_name, last_name, user_name, email, password)
 VALUES
@@ -34,6 +36,7 @@ VALUES
 (11, 'Australia', 'sep'), 
 (12, 'Italy', 'dec'), 
 (13, 'Italy', 'dec'), 
-(14, 'China', 'jan');
+(14, 'China', 'jan'),
+(1, 'Belgium', 'jan');
 
 commit;

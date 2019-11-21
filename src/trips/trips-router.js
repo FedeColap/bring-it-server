@@ -1,12 +1,14 @@
 const path = require('path')
 const express = require('express')
 const TripsService = require('./trips-service')
+const { requireAuth } = require('../middleware/basic-auth')
 
 const tripsRouter = express.Router()
 const jsonParser = express.json()
 
 tripsRouter
   .route('/')
+  .all(requireAuth)
   .get((req, res, next) => {
     TripsService.getAllTrips(
       req.app.get('db')
@@ -16,7 +18,7 @@ tripsRouter
       })
       .catch(next)
   })
-  .post(jsonParser, (req, res, next) => {
+  .post(requireAuth, jsonParser, (req, res, next) => {
     const { country, month, user_id } = req.body
     const newTrip = { country, month }
     
@@ -48,6 +50,7 @@ tripsRouter
 
   tripsRouter
   .route('/:trip_id')
+  .all(requireAuth)
   .get((req, res, next) => {
     const knex = req.app.get('db')
     TripsService.getById(knex, req.params.trip_id)

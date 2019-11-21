@@ -17,6 +17,11 @@ const TripsService = {
             'trips.month'
         )
     },
+
+    getById(knex, id) {
+        return knex.from('trips').select('*').where('id', id).first()
+    },
+    
     insertTrip(knex, newTrip) {
         return knex
             .insert(newTrip)
@@ -29,23 +34,23 @@ const TripsService = {
   
     
   
-    serializeArticle(article) {
-      const { author } = article
-      return {
-        id: article.id,
-        style: article.style,
-        title: xss(article.title),
-        content: xss(article.content),
+    // serializeArticle(article) {
+    //   const { author } = article
+    //   return {
+    //     id: article.id,
+    //     style: article.style,
+    //     title: xss(article.title),
+    //     content: xss(article.content),
 
-        author: {
-          id: author.id,
-          user_name: author.user_name,
-          full_name: author.full_name,
-          nickname: author.nickname,
+    //     author: {
+    //       id: author.id,
+    //       user_name: author.user_name,
+    //       full_name: author.full_name,
+    //       nickname: author.nickname,
 
-        },
-      }
-    },
+    //     },
+    //   }
+    // },
   
 
   }

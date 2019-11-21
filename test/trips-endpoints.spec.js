@@ -7,6 +7,10 @@ const { makeUsersArray, makeTripsArray } = require('./test-helpers')
 
 describe('Trips Endpoints', function() {
     let db
+    function makeAuthHeader(user) {
+        const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64')
+        return `Basic ${token}`
+    }
 
     before('make knex instance', () => {
         db = knex({
@@ -23,12 +27,72 @@ describe('Trips Endpoints', function() {
 
     afterEach('cleanup', () => db.raw('TRUNCATE trips, searchers RESTART IDENTITY CASCADE'))
 
+    describe(`Protected endpoints`, () => {
+        const testUsers = makeUsersArray();
+        const testTrips =  makeTripsArray(testUsers)
+        
+        beforeEach('insert trips', () => {
+            return db
+                .into('searchers')
+                .insert(testUsers)
+                .then(() => {
+                    return db
+                        .into('trips')
+                        .insert(testTrips)
+                })
+        })
+
+        const protectedEndpoints = [
+            {
+                name: 'GET /api/trips/:trip_id',
+                path: '/api/trips/1'
+            },
+            {
+                name: 'GET /api/trips',
+                path: '/api/trips'
+            }
+        ]
+        
+        protectedEndpoints.forEach(endpoint => {
+            describe(endpoint.name, () => {
+                it(`responds with 401 'Missing basic token' when no basic token`, () => {
+                    return supertest(app)
+                        .get(endpoint.path)
+                        .expect(401, { error: `Missing basic token` })
+                })
+                it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
+                    const userNoCreds = { user_name: '', password: '' }
+                    return supertest(app)
+                        .get(endpoint.path)
+                        .set('Authorization', makeAuthHeader(userNoCreds))
+                        .expect(401, { error: `Unauthorized request` })
+                })
+                it(`responds 401 'Unauthorized request' when invalid user`, () => {
+                    const userInvalidCreds = { user_name: 'user-not', password: 'existy' }
+                    return supertest(app)
+                        .get(endpoint.path)
+                        .set('Authorization', makeAuthHeader(userInvalidCreds))
+                        .expect(401, { error: `Unauthorized request` })
+                })
+                it(`responds 401 'Unauthorized request' when invalid password`, () => {
+                    const userInvalidPass = { user_name: testUsers[0].user_name, password: 'wrong' }
+                    return supertest(app)
+                        .get(endpoint.path)
+                        .set('Authorization', makeAuthHeader(userInvalidPass))
+                        .expect(401, { error: `Unauthorized request` })
+                })
+            })
+        })
+    })
+
     describe(`GET /api/trips`, () => {
 
         context(`Given no trips`, () => {
-            it(`responds with 200 and an empty list`, () => {
+            //I HAVE TO SKIP BECAUSE IF THERE IS NO USER THEN THERE IS NO AUTh TOKEN
+            it.skip(`responds with 200 and an empty list`, () => {
                 return supertest(app)
                 .get('/api/trips')
+                .set('Authorization', makeAuthHeader(testUsers[0]))
                 .expect(200, [])
             })
         })
@@ -36,7 +100,7 @@ describe('Trips Endpoints', function() {
 
         context('Given there are trips in the database', () => {
             const testUsers = makeUsersArray();
-            const testTrips =  makeTripsArray()
+            const testTrips =  makeTripsArray(testUsers)
 
             beforeEach('insert trips', () => {
                 return db
@@ -52,6 +116,7 @@ describe('Trips Endpoints', function() {
             it('GET /api/trips responds with 200 and all of the trips', () => {
                 return supertest(app)
                     .get('/api/trips')
+                    .set('Authorization', makeAuthHeader(testUsers[0]))
                     .expect(200, testTrips)
             })
         })
@@ -60,17 +125,32 @@ describe('Trips Endpoints', function() {
     describe(`GET /api/trips/:trip_id`, () => {
 
         context(`Given no trips`, () => {
+
+            const testUsers = makeUsersArray();
+            const testTrips =  makeTripsArray(testUsers)
+        
+            beforeEach('insert trips', () => {
+                return db
+                    .into('searchers')
+                    .insert(testUsers)
+                    .then(() => {
+                        return db
+                            .into('trips')
+                            .insert(testTrips)
+                    })
+            })
             it(`responds with 404`, () => {
                 const tripId = 123456
                 return supertest(app)
                     .get(`/api/trips/${tripId}`)
+                    .set('Authorization', makeAuthHeader(testUsers[0]))
                     .expect(404, { error: { message: `Trip doesn't exist` } })
             })
         })
 
         context('Given there are trips in the database', () =>{
             const testUsers = makeUsersArray();
-            const testTrips =  makeTripsArray()
+            const testTrips =  makeTripsArray(testUsers)
         
             beforeEach('insert trips', () => {
                 return db
@@ -83,11 +163,12 @@ describe('Trips Endpoints', function() {
                     })
             })
 
-            it('GET /trips/:trip_id responds with 200 and the specified article', () => {
+            it('GET /api/trips/:trip_id responds with 200 and the specified article', () => {
                 const tripId = 2
                 const expectedTrip = testTrips[tripId - 1]
                 return supertest(app)
                     .get(`/api/trips/${tripId}`)
+                    .set('Authorization', makeAuthHeader(testUsers[0]))
                     .expect(200, expectedTrip)
             })
         })

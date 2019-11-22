@@ -83,6 +83,7 @@ function makeAuthHeader(user) {
   return `Basic ${token}`
 }
 
+
 module.exports = {
     makeUsersArray,
     makeTripsArray,

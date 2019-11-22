@@ -19,7 +19,7 @@ tripsRouter
       .catch(next)
   })
   .post(requireAuth, jsonParser, (req, res, next) => {
-    const { country, month, user_id } = req.body
+    const { country, month } = req.body
     const newTrip = { country, month }
     
     if(!country) {
@@ -33,7 +33,8 @@ tripsRouter
       })
     }
     
-    newTrip.user_id = user_id
+    newTrip.user_id = req.user.id
+    console.log(req.user.id)
 
     TripsService.insertTrip(
         req.app.get('db'),

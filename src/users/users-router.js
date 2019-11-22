@@ -36,8 +36,13 @@ usersRouter
         })
       }
     }
+    if (password !== confirm_password) {
+        return res
+            .status(400)
+            .send('Password and confirmation must match');
+    }
 
-    newUser.user_name = nickname;
+    newUser.user_name = user_name;
     newUser.password = password;
 
     UsersService.insertUser(

@@ -4,6 +4,7 @@ const app = require('../src/app')
 // const { makeTripsArray } = require('./trips.fixtures')
 // const { makeUsersArray } = require('./users.fixtures')
 const { makeUsersArray, makeTripsArray } = require('./test-helpers')
+const helpers = require('./test-helpers')
 
 describe('Trips Endpoints', function() {
     let db
@@ -89,7 +90,7 @@ describe('Trips Endpoints', function() {
 
         context(`Given no trips`, () => {
             //I HAVE TO SKIP BECAUSE IF THERE IS NO USER THEN THERE IS NO AUTh TOKEN
-            it.skip(`responds with 200 and an empty list`, () => {
+            it(`responds with 200 and an empty list`, () => {
                 return supertest(app)
                 .get('/api/trips')
                 .set('Authorization', makeAuthHeader(testUsers[0]))
@@ -176,13 +177,25 @@ describe('Trips Endpoints', function() {
 
     //CANNOT WORK UNTIL I FIGURE OUT HOW TO ASSIGN THE PROPER USER_ID TO A NEW POST
     describe(`POST /api/trips`, () => {
+
         const testUsers = makeUsersArray();
+
         beforeEach('insert malicious article', () => {
             return db
               .into('searchers')
               .insert(testUsers)
           })
-        it.skip(`creates a trip, responding with 201 and the new trip`,  function() {
+
+        
+        it(`responds 401 'Unauthorized request' when invalid password`, () => {
+            const userInvalidPass = { user_name: testUsers[0].user_name, password: 'wrong' }
+            return supertest(app)
+                .post('/api/trips')
+                .set('Authorization', helpers.makeAuthHeader(userInvalidPass))
+                .expect(401, { error: `Unauthorized request` })
+        })
+
+        it(`creates a trip, responding with 201 and the new trip`,  function() {
             const testUser = testUsers[0]
             const newTrip = {
                 country: 'Nicaragua',
@@ -190,6 +203,7 @@ describe('Trips Endpoints', function() {
             }
             return supertest(app)
                 .post('/api/trips')
+                .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
                 .send(newTrip)
                 .expect(201)
                 .expect(res => {
@@ -199,6 +213,18 @@ describe('Trips Endpoints', function() {
                     expect(res.body).to.have.property('id')
                     expect(res.headers.location).to.eql(`/api/trips/${res.body.id}`)
                 })
+                .expect (res => 
+                    db
+                    .from('trips')
+                    .select('*')
+                    .where({ id: res.body.id })
+                    .first()
+                    .then(row => {
+                        expect(row.country).to.eql(newTrip.country)
+                        expect(row.month).to.eql(newTrip.month)
+                        expect(row.user_id).to.eql(testUser.id)
+                    })
+                )
                 .then(postRes =>
                     supertest(app)
                     .get(`/api/trips/${postRes.body.id}`)
@@ -208,6 +234,7 @@ describe('Trips Endpoints', function() {
         it(`responds with 400 and an error message when the 'country' is missing`, () => {
             return supertest(app)
                 .post('/api/trips')
+                .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
                 .send({
                     month: 'feb',
 
@@ -219,6 +246,7 @@ describe('Trips Endpoints', function() {
         it(`responds with 400 and an error message when the 'month' is missing`, () => {
             return supertest(app)
                 .post('/api/trips')
+                .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
                 .send({
                     country: 'India',
 

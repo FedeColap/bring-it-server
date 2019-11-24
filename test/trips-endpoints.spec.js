@@ -4,7 +4,7 @@ const app = require('../src/app')
 const { makeUsersArray, makeTripsArray } = require('./test-helpers')
 const helpers = require('./test-helpers')
 
-describe('Trips Endpoints', function() {
+describe.only('Trips Endpoints', function() {
     let db
     const {
         testUsers,
@@ -14,7 +14,7 @@ describe('Trips Endpoints', function() {
     before('make knex instance', () => {
         db = knex({
         client: 'pg',
-        connection: process.env.TEST_DATABASE_URL,
+        connection: process.env.TEST_DB_URL,
         })
 
         app.set('db', db)
@@ -57,7 +57,7 @@ describe('Trips Endpoints', function() {
                 it(`responds with 401 'Missing basic token' when no basic token`, () => {
                     return supertest(app)
                         .get(endpoint.path)
-                        .expect(401, { error: `Missing basic token` })
+                        .expect(401, { error: `Missing bearer token` })
                 })
                 it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
                     const userNoCreds = { user_name: '', password: '' }

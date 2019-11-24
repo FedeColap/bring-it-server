@@ -1,7 +1,7 @@
 const path = require('path')
 const express = require('express')
 const TripsService = require('./trips-service')
-const { requireAuth } = require('../middleware/basic-auth')
+const { requireAuth } = require('../middleware/jwt-auth')
 
 const tripsRouter = express.Router()
 const jsonParser = express.json()

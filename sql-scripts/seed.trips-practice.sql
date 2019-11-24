@@ -15,3 +15,4 @@ VALUES
 ( 'Italy', 'dec'), 
 ( 'Italy', 'dec'), 
 ( 'China', 'jan');
+

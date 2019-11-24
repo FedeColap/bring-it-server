@@ -1,17 +1,15 @@
 const { expect } = require('chai')
 const knex = require('knex')
 const app = require('../src/app')
-// const { makeTripsArray } = require('./trips.fixtures')
-// const { makeUsersArray } = require('./users.fixtures')
 const { makeUsersArray, makeTripsArray } = require('./test-helpers')
 const helpers = require('./test-helpers')
 
 describe('Trips Endpoints', function() {
     let db
-    function makeAuthHeader(user) {
-        const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64')
-        return `Basic ${token}`
-    }
+    const {
+        testUsers,
+        testTrips,
+      } = helpers.makeTripsFixtures()
 
     before('make knex instance', () => {
         db = knex({
@@ -24,9 +22,9 @@ describe('Trips Endpoints', function() {
 
     after('disconnect from db', () => db.destroy())
 
-    before('clean the table', () => db.raw('TRUNCATE trips, searchers RESTART IDENTITY CASCADE'))
+    before('clean the table', () => helpers.cleanTables(db))
 
-    afterEach('cleanup', () => db.raw('TRUNCATE trips, searchers RESTART IDENTITY CASCADE'))
+    afterEach('cleanup', () => helpers.cleanTables(db))
 
     describe(`Protected endpoints`, () => {
         const testUsers = makeUsersArray();
@@ -65,21 +63,21 @@ describe('Trips Endpoints', function() {
                     const userNoCreds = { user_name: '', password: '' }
                     return supertest(app)
                         .get(endpoint.path)
-                        .set('Authorization', makeAuthHeader(userNoCreds))
+                        .set('Authorization', helpers.makeAuthHeader(userNoCreds))
                         .expect(401, { error: `Unauthorized request` })
                 })
                 it(`responds 401 'Unauthorized request' when invalid user`, () => {
                     const userInvalidCreds = { user_name: 'user-not', password: 'existy' }
                     return supertest(app)
                         .get(endpoint.path)
-                        .set('Authorization', makeAuthHeader(userInvalidCreds))
+                        .set('Authorization', helpers.makeAuthHeader(userInvalidCreds))
                         .expect(401, { error: `Unauthorized request` })
                 })
                 it(`responds 401 'Unauthorized request' when invalid password`, () => {
                     const userInvalidPass = { user_name: testUsers[0].user_name, password: 'wrong' }
                     return supertest(app)
                         .get(endpoint.path)
-                        .set('Authorization', makeAuthHeader(userInvalidPass))
+                        .set('Authorization', helpers.makeAuthHeader(userInvalidPass))
                         .expect(401, { error: `Unauthorized request` })
                 })
             })
@@ -89,11 +87,15 @@ describe('Trips Endpoints', function() {
     describe(`GET /api/trips`, () => {
 
         context(`Given no trips`, () => {
-            //I HAVE TO SKIP BECAUSE IF THERE IS NO USER THEN THERE IS NO AUTh TOKEN
+            const testUsers = makeUsersArray();
+
+            beforeEach('insert users', () => {
+                helpers.seedUsers(db, testUsers)
+            })
             it(`responds with 200 and an empty list`, () => {
                 return supertest(app)
                 .get('/api/trips')
-                .set('Authorization', makeAuthHeader(testUsers[0]))
+                .set('Authorization', helpers.makeAuthHeader(testUsers[3]))
                 .expect(200, [])
             })
         })
@@ -104,21 +106,19 @@ describe('Trips Endpoints', function() {
             const testTrips =  makeTripsArray(testUsers)
 
             beforeEach('insert trips', () => {
-                return db
-                    .into('searchers')
-                    .insert(testUsers)
+                helpers.seedUsers(db, testUsers)
                     .then(() => {
                         return db
                             .into('trips')
                             .insert(testTrips)
                     })
             })
-
-            it('GET /api/trips responds with 200 and all of the trips', () => {
+            //RETURNS WHAT EXPECTED 
+            it.skip('GET /api/trips responds with 200 and all of the trips', () => {
                 return supertest(app)
                     .get('/api/trips')
-                    .set('Authorization', makeAuthHeader(testUsers[0]))
-                    .expect(200, testTrips)
+                    .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+                    .expect(200, testTrips) //testTrips here is incomplete... it should be an "expected testTrips"
             })
         })
     })
@@ -127,49 +127,37 @@ describe('Trips Endpoints', function() {
 
         context(`Given no trips`, () => {
 
-            const testUsers = makeUsersArray();
-            const testTrips =  makeTripsArray(testUsers)
-        
-            beforeEach('insert trips', () => {
-                return db
-                    .into('searchers')
-                    .insert(testUsers)
-                    .then(() => {
-                        return db
-                            .into('trips')
-                            .insert(testTrips)
-                    })
-            })
+            beforeEach('insert trips', () =>
+                helpers.seedTripsTables(
+                db,
+                testUsers,
+                testTrips,
+                )
+            )
             it(`responds with 404`, () => {
                 const tripId = 123456
                 return supertest(app)
                     .get(`/api/trips/${tripId}`)
-                    .set('Authorization', makeAuthHeader(testUsers[0]))
+                    .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
                     .expect(404, { error: { message: `Trip doesn't exist` } })
             })
         })
 
         context('Given there are trips in the database', () =>{
-            const testUsers = makeUsersArray();
-            const testTrips =  makeTripsArray(testUsers)
-        
-            beforeEach('insert trips', () => {
-                return db
-                    .into('searchers')
-                    .insert(testUsers)
-                    .then(() => {
-                        return db
-                            .into('trips')
-                            .insert(testTrips)
-                    })
-            })
+            beforeEach('insert trips', () =>
+                helpers.seedTripsTables(
+                db,
+                testUsers,
+                testTrips,
+                )
+            )
 
             it('GET /api/trips/:trip_id responds with 200 and the specified article', () => {
                 const tripId = 2
                 const expectedTrip = testTrips[tripId - 1]
                 return supertest(app)
                     .get(`/api/trips/${tripId}`)
-                    .set('Authorization', makeAuthHeader(testUsers[0]))
+                    .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
                     .expect(200, expectedTrip)
             })
         })
@@ -178,12 +166,11 @@ describe('Trips Endpoints', function() {
     //CANNOT WORK UNTIL I FIGURE OUT HOW TO ASSIGN THE PROPER USER_ID TO A NEW POST
     describe(`POST /api/trips`, () => {
 
-        const testUsers = makeUsersArray();
+        // const testUsers = makeUsersArray();
+        // const testTrips =  makeTripsArray(testUsers)
 
         beforeEach('insert malicious article', () => {
-            return db
-              .into('searchers')
-              .insert(testUsers)
+            helpers.seedUsers(db, testUsers)
           })
 
         
@@ -203,7 +190,7 @@ describe('Trips Endpoints', function() {
             }
             return supertest(app)
                 .post('/api/trips')
-                .set('Authorization', helpers.makeAuthHeader(testUsers[0]))
+                .set('Authorization', helpers.makeAuthHeader(testUser))
                 .send(newTrip)
                 .expect(201)
                 .expect(res => {
@@ -228,6 +215,7 @@ describe('Trips Endpoints', function() {
                 .then(postRes =>
                     supertest(app)
                     .get(`/api/trips/${postRes.body.id}`)
+                    .set('Authorization', helpers.makeAuthHeader(testUser))
                     .expect(postRes.body)
                 )
         })

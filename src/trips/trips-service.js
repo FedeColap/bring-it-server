@@ -10,7 +10,7 @@ const TripsService = {
             'searchers.id'
         )
         .select(
-            'searchers.id',
+            'trips.user_id',
             'searchers.user_name',
             'searchers.email',
             'trips.country',

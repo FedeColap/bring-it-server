@@ -34,6 +34,7 @@ tripsRouter
     }
     
     newTrip.user_id = req.user.id
+    
     console.log(req.user.id)
 
     TripsService.insertTrip(

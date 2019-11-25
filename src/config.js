@@ -5,4 +5,5 @@ module.exports = {
     DB_URL: process.env.DB_URL || 'postgresql://federica.colapaoli@localhost/capstone',
     TEST_DB_URL: process.env.TEST_DB_URL || 'postgresql://federica.colapaoli@localhost/capstone-test',
     JWT_SECRET: process.env.JWT_SECRET || 'bring-it-secret',
+    JWT_EXPIRY: process.env.JWT_EXPIRY || '3h',
 }

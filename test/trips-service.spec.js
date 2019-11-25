@@ -14,8 +14,6 @@ describe(`Trips service object`, function() {
         })
         
     })
-    // before('clean the table', () => db.raw('TRUNCATE trips, searchers RESTART IDENTITY CASCADE'))
-    // afterEach('cleanup', () => db.raw('TRUNCATE trips, searchers RESTART IDENTITY CASCADE'))
 
     after('disconnect from db', () => db.destroy())
 

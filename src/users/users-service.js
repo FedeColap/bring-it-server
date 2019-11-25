@@ -26,16 +26,6 @@ const UsersService = {
 
       }
     },
-  
-    // insertUser(knex, newUser) {
-    //   return knex
-    //     .insert(newUser)
-    //     .into('searchers')
-    //     .returning('*')
-    //     .then(rows => {
-    //       return rows[0]
-    //     })
-    // },
 
     validatePassword(password) {
       if (password.length < 8) {

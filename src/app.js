@@ -4,7 +4,6 @@ const morgan = require('morgan')
 const cors = require('cors')
 const helmet = require('helmet')
 const { NODE_ENV } = require('./config')
-// const validateBearerToken = require('./validate-bearer-token')
 const winston = require('winston');
 const tripsRouter = require('./trips/trips-router')
 const usersRouter = require('./users/users-router')
@@ -39,8 +38,6 @@ const logger = winston.createLogger({
        format: winston.format.simple()
      }));
    }
-
-// app.use(validateBearerToken)
 
 
 app.get('/', (req, res) => {

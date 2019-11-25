@@ -32,7 +32,7 @@ describe.only('Users Endpoints', function() {
         )
       )
 
-      const requiredFields = ['first_name', 'last_name', 'user_name', 'email', 'password']
+      const requiredFields = ['first_name', 'last_name', 'user_name', 'email', 'password', 'repeat_password']
 
       requiredFields.forEach(field => {
         const registerAttemptBody = {
@@ -41,6 +41,7 @@ describe.only('Users Endpoints', function() {
           user_name: 'test user_name',
           email: 'test email',
           password: 'test password',
+          repeat_password: 'test password',
         }
 
         it(`responds with 400 required error when '${field}' is missing`, () => {
@@ -61,6 +62,7 @@ describe.only('Users Endpoints', function() {
             user_name: 'test user_name',
             email: 'test email',
             password: '1234567',
+            repeat_password: '1234567',
         }
         return supertest(app)
             .post('/api/users')
@@ -74,6 +76,7 @@ describe.only('Users Endpoints', function() {
             user_name: 'test user_name',
             email: 'test email',
             password: '*'.repeat(73),
+            repeat_password: '*'.repeat(73),
         }
         // console.log(userLongPassword)
         // console.log(userLongPassword.password.length)
@@ -89,6 +92,7 @@ describe.only('Users Endpoints', function() {
             user_name: 'test user_name',
             email: 'test email',
             password: ' 1Aa!2Bb@',
+            repeat_password: ' 1Aa!2Bb@',
         }
         return supertest(app)
             .post('/api/users')
@@ -102,6 +106,7 @@ describe.only('Users Endpoints', function() {
             user_name: 'test user_name',
             email: 'test email',
             password: '1Aa!2Bb@ ',
+            repeat_password: '1Aa!2Bb@ ',
         }
         return supertest(app)
             .post('/api/users')
@@ -115,6 +120,7 @@ describe.only('Users Endpoints', function() {
             user_name: 'test user_name',
             email: 'test email',
             password: '11AAaabb',
+            repeat_password: '11AAaabb',
         }
         return supertest(app)
             .post('/api/users')
@@ -129,6 +135,7 @@ describe.only('Users Endpoints', function() {
             user_name: testUser.user_name,
             email: 'test email',
             password: '11AAaa!!',
+            repeat_password: '11AAaa!!',
         }
         return supertest(app)
             .post('/api/users')
@@ -145,6 +152,7 @@ describe.only('Users Endpoints', function() {
                 user_name: 'test user_name',
                 email: 'test email',
                 password: '11AAaa!!',
+                repeat_password: '11AAaa!!',
             }
             return supertest(app)
                     .post('/api/users')
@@ -157,10 +165,7 @@ describe.only('Users Endpoints', function() {
                         expect(res.body.user_name).to.eql(newUser.user_name)
                         expect(res.body.email).to.eql(newUser.email)
                         expect(res.body).to.not.have.property('password')
-                        expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
-                        // const expectedDate = new Date().toLocaleString('en', { timeZone: 'UTC' })
-                        // const actualDate = new Date(res.body.date_created).toLocaleString()
-                        // expect(actualDate).to.eql(expectedDate)
+                        expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)                
                     })
                     .expect(res =>
                         db
@@ -173,9 +178,6 @@ describe.only('Users Endpoints', function() {
                             expect(row.last_name).to.eql(newUser.last_name)
                             expect(row.user_name).to.eql(newUser.user_name)
                             expect(row.email).to.eql(newUser.email)
-                            // const expectedDate = new Date().toLocaleString('en', { timeZone: 'UTC' })
-                            // const actualDate = new Date(row.date_created).toLocaleString()
-                            // expect(actualDate).to.eql(expectedDate)
                             return bcrypt.compare(newUser.password, row.password)
                         })
                         .then(compareMatch => {

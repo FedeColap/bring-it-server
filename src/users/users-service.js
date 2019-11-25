@@ -1,20 +1,41 @@
 const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&])[\S]+/
+const xss = require('xss')
+const bcrypt = require('bcryptjs')
 
 
 const UsersService = {
     getAllUsers(knex) {
       return knex.select('*').from('searchers')
     },
-  
-    insertUser(knex, newUser) {
-      return knex
-        .insert(newUser)
-        .into('searchers')
-        .returning('*')
-        .then(rows => {
-          return rows[0]
-        })
+
+    insertUser(db, newUser) {
+      return db
+          .insert(newUser)
+          .into('searchers')
+          .returning('*')
+          .then(([user]) => user)
     },
+
+    serializeUser(user) {
+      return {
+          id: user.id,
+          first_name: xss(user.first_name),
+          last_name: xss(user.last_name),
+          user_name: xss(user.user_name),
+          email: xss(user.email),
+
+      }
+    },
+  
+    // insertUser(knex, newUser) {
+    //   return knex
+    //     .insert(newUser)
+    //     .into('searchers')
+    //     .returning('*')
+    //     .then(rows => {
+    //       return rows[0]
+    //     })
+    // },
 
     validatePassword(password) {
       if (password.length < 8) {
@@ -30,6 +51,10 @@ const UsersService = {
         return 'Password must contain 1 upper case, lower case, number and special character'
       }
       return null
+    },
+
+    hashPassword(password) {
+      return bcrypt.hash(password, 12)
     },
 
     hasUserWithUserName(db, user_name) {

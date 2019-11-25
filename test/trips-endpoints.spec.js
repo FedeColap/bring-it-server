@@ -4,7 +4,7 @@ const app = require('../src/app')
 const { makeUsersArray, makeTripsArray } = require('./test-helpers')
 const helpers = require('./test-helpers')
 
-describe.only('Trips Endpoints', function() {
+describe('Trips Endpoints', function() {
     let db
     const {
         testUsers,

@@ -3,7 +3,7 @@ const app = require('../src/app')
 const helpers = require('./test-helpers')
 const { makeUsersArray, makeTripsArray } = require('./test-helpers')
 
-describe.only('Protected endpoints', function() {
+describe('Protected endpoints', function() {
     let db
   
     const testUsers = makeUsersArray();

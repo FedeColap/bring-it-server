@@ -32,7 +32,8 @@ VALUES
 INSERT INTO trips 
     (user_id, country, month)
 VALUES 
-(1, 'France', 'jun'), 
+(1, 'Canada', 'jan'), 
+(2, 'France', 'jun'), 
 (2, 'Italy', 'jan'), 
 (3, 'Austria', 'jan'), 
 (4, 'Spain', 'feb'), 

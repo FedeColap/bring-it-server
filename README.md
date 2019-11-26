@@ -8,13 +8,14 @@ Back-end application for storing and retrieving Information about the users and 
 
 #### This App has been built with: 
 
-Node.js 
-Express server frameworkJWT and bcrypt.js for authentication
-Morgan and Winston for logging
-PostgreSQL database
-Knex.js for query building
-Postgrator for versioning
-Testing on Mocha framework using Chai and Supertest
+* React
+* Node.js 
+ * Express server frameworkJWT and bcrypt.js for authentication
+ * Morgan and Winston for logging
+* PostgreSQL database
+ * Knex.js for query building
+ * Postgrator for versioning
+* Testing on Mocha framework using Chai and Supertest
 
 ### API Documentation
 While there are pages that are visible to everyone (like the Homepage, or the *More Info* page), 
